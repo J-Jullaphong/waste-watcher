@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h1 class="mb-4 text-center">Welcome to WasteWatcher </h1>
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card mb-3">
+        <div class="card-body text-center">
+          <h5 class="card-title">Latest Waste Level</h5>
+          <p class="card-text">View the latest waste level recorded along with weather data.</p>
+          <a href="{% url 'waste:latest' %}" class="btn btn-primary">Go to Latest Waste</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card mb-3">
+        <div class="card-body text-center">
+          <h5 class="card-title">Waste Level Comparison</h5>
+          <p class="card-text">View waste level comparisons across different locations or bins.</p>
+          <a href="{% url 'waste:comparison' %}" class="btn btn-primary">Go to Waste Comparison</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card mb-3">
+        <div class="card-body text-center">
+          <h5 class="card-title">API Documentation</h5>
+          <p class="card-text">Explore our API documentation.</p>
+          <a href="{% url 'waste:swagger' %}" class="btn btn-primary">Go to API Documentation</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

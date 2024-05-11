@@ -1,0 +1,356 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h1 class="mb-4 text-center">Waste Level Comparison</h1>
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <form class="mb-3">
+        <div class="mb-3">
+          <label for="filterType" class="form-label">Filter Type</label>
+          <select class="form-select" id="filterType" name="filter_type">
+            <option value="bin_id" {% if request.GET.filter_type == 'bin_id' %} selected {% endif %}>Bin ID</option>
+            <option value="location" {% if request.GET.filter_type == 'location' %} selected {% endif %}>Location</option>
+          </select>
+        </div>
+        <div class="mb-3" id="filterInputContainer">
+          {% if request.GET.filter_type == 'bin_id' %}
+            <label for="filterInput" class="form-label">Select Bin</label>
+            <select class="form-select" id="filterInput" name="filter_value">
+              <option value="">Select bin</option>
+              {% for bin in bins %}
+                <option value="{{ bin.bin_id }}" {% if request.GET.filter_value == bin.bin_id|stringformat:"s" %} selected {% endif %}>{{ bin.bin_id }}</option>
+              {% endfor %}
+            </select>
+          {% elif request.GET.filter_type == 'location' %}
+            <label for="filterInput" class="form-label">Select Location</label>
+            <select class="form-select" id="filterInput" name="filter_value">
+              <option value="">Select location</option>
+              {% for location in locations %}
+                <option value="{{ location.location }}" {% if request.GET.filter_value == location.location %} selected {% endif %}>{{ location.location }}</option>
+              {% endfor %}
+            </select>
+          {% endif %}
+        </div>
+        <div class="mb-3">
+          <label for="yearInput" class="form-label">Year</label>
+          <input type="number" class="form-control" id="yearInput" name="year" value="{{ request.GET.year }}" min="2000" max="2099" placeholder="Enter year">
+        </div>
+        <div class="mb-3" id="monthInputContainer" style="display: {% if request.GET.year %}block{% else %}none{% endif %}">
+          <label for="monthInput" class="form-label">Month</label>
+          <input type="number" class="form-control" id="monthInput" name="month" value="{{ request.GET.month }}" min="1" max="12" placeholder="Enter month">
+        </div>
+        <div class="mb-3" id="dayInputContainer" style="display: {% if request.GET.year and request.GET.month %}block{% else %}none{% endif %}">
+          <label for="dayInput" class="form-label">Day</label>
+          <input type="number" class="form-control" id="dayInput" name="day" value="{{ request.GET.day }}" min="1" max="31" placeholder="Enter day">
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+      </form>
+    </div>
+  </div>
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <canvas id="wasteLineChart"></canvas>
+    </div>
+  </div>
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <canvas id="temperatureLineChart"></canvas>
+    </div>
+  </div>
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <canvas id="precipitationLineChart"></canvas>
+    </div>
+  </div>
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <canvas id="humidityLineChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="container mt-5">
+  <div class="row mt-5 justify-content-center">
+      <table class="table table-striped text-center">
+        <thead>
+          <tr>
+            <th scope="col">Timestamp</th>
+            <th scope="col">Waste Level</th>
+            <th scope="col">Temperature (Min)</th>
+            <th scope="col">Temperature (Max)</th>
+            <th scope="col">Temperature (Avg)</th>
+            <th scope="col">Precipitation (Min)</th>
+            <th scope="col">Precipitation (Max)</th>
+            <th scope="col">Precipitation (Total)</th>
+            <th scope="col">Humidity (Min)</th>
+            <th scope="col">Humidity (Max)</th>
+            <th scope="col">Humidity (Avg)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for weather in weather_data %}
+          <tr>
+            <td>{{ weather.timestamp }}</td>
+            <td>{{ chart_data|slice:forloop.counter|last }}</td>
+            <td>{{ weather.temperature_min }}</td>
+            <td>{{ weather.temperature_max }}</td>
+            <td>{{ weather.temperature_avg }}</td>
+            <td>{{ weather.precipitation_min }}</td>
+            <td>{{ weather.precipitation_max }}</td>
+            <td>{{ weather.precipitation_total }}</td>
+            <td>{{ weather.humidity_min }}</td>
+            <td>{{ weather.humidity_max }}</td>
+            <td>{{ weather.humidity_avg }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{{ chart_labels|json_script:"labels" }}
+{{ chart_data|json_script:"data" }}
+{{ temperature_data|json_script:"temperature_data" }}
+{{ precipitation_data|json_script:"precipitation_data" }}
+{{ humidity_data|json_script:"humidity_data" }}
+
+
+<script>
+  function updateFilterInput() {
+    const filterType = document.getElementById('filterType').value;
+    const filterInputContainer = document.getElementById('filterInputContainer');
+
+    filterInputContainer.innerHTML = '';
+
+    if (filterType === 'location') {
+        var select = document.createElement('select');
+        select.className = 'form-select';
+        select.id = 'filterInput';
+        select.name = 'filter_value';
+        
+        var defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Select location';
+        select.appendChild(defaultOption);
+
+        {% for location in locations %}
+        var optionLoc = document.createElement('option');
+        optionLoc.value = '{{ location.location }}';
+        optionLoc.textContent = '{{ location.location }}';
+        {% if request.GET.filter_type == 'location' and request.GET.filter_value == location.location %}
+        optionLoc.selected = true;
+        {% endif %}
+        select.appendChild(optionLoc);
+        {% endfor %}
+        
+        filterInputContainer.appendChild(select);
+    } else {
+        var selectBin = document.createElement('select');
+        selectBin.className = 'form-select';
+        selectBin.id = 'filterInput';
+        selectBin.name = 'filter_value';
+        
+        var defaultOptionBin = document.createElement('option');
+        defaultOptionBin.value = '';
+        defaultOptionBin.textContent = 'Select bin';
+        selectBin.appendChild(defaultOptionBin);
+
+        {% for bin in bins %}
+        var optionBin = document.createElement('option');
+        optionBin.value = '{{ bin.bin_id }}';
+        optionBin.textContent = '{{ bin.bin_id }}';
+        {% if request.GET.filter_type == 'bin_id' and request.GET.filter_value == bin.bin_id|stringformat:"s" %}
+        optionBin.selected = true;
+        {% endif %}
+        selectBin.appendChild(optionBin);
+        {% endfor %}
+        
+        filterInputContainer.appendChild(selectBin);
+    }
+  }
+
+  function updateMonthInput() {
+    const yearInput = document.getElementById('yearInput').value;
+    const monthInputContainer = document.getElementById('monthInputContainer');
+
+    if (yearInput) {
+      monthInputContainer.style.display = 'block';
+    } else {
+      monthInputContainer.style.display = 'none';
+      document.getElementById('monthInput').value = '';
+      document.getElementById('dayInput').value = '';
+      document.getElementById('dayInputContainer').style.display = 'none';
+    }
+  }
+
+  function updateDayInput() {
+    const monthInput = document.getElementById('monthInput').value;
+    const dayInputContainer = document.getElementById('dayInputContainer');
+
+    if (monthInput) {
+      dayInputContainer.style.display = 'block';
+    } else {
+      dayInputContainer.style.display = 'none';
+      document.getElementById('dayInput').value = '';
+    }
+  }
+
+  updateFilterInput();
+  updateMonthInput();
+  updateDayInput();
+
+  document.getElementById('filterType').addEventListener('change', updateFilterInput);
+  document.getElementById('yearInput').addEventListener('input', updateMonthInput);
+  document.getElementById('monthInput').addEventListener('input', updateDayInput);
+
+  const lineCtx = document.getElementById('wasteLineChart');
+  const temperatureCtx = document.getElementById('temperatureLineChart');
+  const precipitationCtx = document.getElementById('precipitationLineChart');
+  const humidityCtx = document.getElementById('humidityLineChart');
+
+  var labels = JSON.parse(document.getElementById('labels').textContent);
+  var data = JSON.parse(document.getElementById('data').textContent);
+  var temperatureData = JSON.parse(document.getElementById('temperature_data').textContent);
+  var precipitationData = JSON.parse(document.getElementById('precipitation_data').textContent);
+  var humidityData = JSON.parse(document.getElementById('humidity_data').textContent);
+
+  new Chart(lineCtx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Waste Level',
+        data: data,
+        fill: false,
+        borderColor: 'rgba(255, 99, 132, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+        pointRadius: 4,
+        cubicInterpolationMode: 'monotone'
+      }]
+    },
+    options: {
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Time'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Waste Added Level (cm)'
+          },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  new Chart(temperatureCtx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Temperature (deg C)',
+        data: temperatureData,
+        fill: false,
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+        pointRadius: 4,
+        cubicInterpolationMode: 'monotone'
+      }]
+    },
+    options: {
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Time'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Temperature (deg C)'
+          },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  new Chart(precipitationCtx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Precipitation',
+        data: precipitationData,
+        fill: false,
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+        pointRadius: 4,
+        cubicInterpolationMode: 'monotone'
+      }]
+    },
+    options: {
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Time'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Precipitation (mm)'
+          },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  new Chart(humidityCtx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Humidity',
+        data: humidityData,
+        fill: false,
+        borderColor: 'rgba(153, 102, 255, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(153, 102, 255, 1)',
+        pointRadius: 4,
+        cubicInterpolationMode: 'monotone'
+      }]
+    },
+    options: {
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Time'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Humidity (%)'
+          },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}
+

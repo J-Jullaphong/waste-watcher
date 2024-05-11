@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h1 class="mb-4 text-center">Latest Waste Level</h1>
+  <div class="row">
+    <div class="col-md-6 mx-auto">
+      <form class="mb-3">
+        <div class="mb-3">
+          <label for="filterType" class="form-label">Filter Type</label>
+          <select class="form-select" id="filterType" name="filter_type">
+            <option value="bin_id" {% if request.GET.filter_type == 'bin_id' %} selected {% endif %}>Bin ID</option>
+            <option value="location" {% if request.GET.filter_type == 'location' %} selected {% endif %}>Location</option>
+          </select>
+        </div>
+        <div class="mb-3" id="filterInputContainer">
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+      </form>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6 mx-auto">
+      <div class="card">
+        <div class="card-body">
+          {% if waste %}
+          <h5 class="card-title">Latest Waste Level</h5>
+          <p class="card-text">
+            {% if request.GET.filter_type == 'location' %}
+            Location: {{ waste.bin.location }}
+            {% else %}
+            Bin: {{ waste.bin_id }}
+            {% endif %}
+          </p>
+          <p class="card-text">Waste Level: {{ waste.level }}</p>
+          <p class="card-text">Timestamp: {{ waste.timestamp|date:"Y-m-d H:i" }}</p>
+          {% else %}
+          <p class="card-text">No waste data available.</p>
+          {% endif %}
+          {% if waste and latest_weather %}
+          <hr>
+          <p class="card-text">Temperature: {{ latest_weather.temp }}</p>
+          <p class="card-text">Precipitation: {{ latest_weather.precip }}</p>
+          <p class="card-text">Humidity: {{ latest_weather.humid }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row mt-5 justify-content-center">
+    <div class="col-md-8">
+      <canvas id="wasteLineChart"></canvas>
+    </div>
+  </div>
+  <div class="row mt-5 justify-content-center">
+    <div class="col-md-8">
+      <canvas id="temperatureLineChart"></canvas>
+    </div>
+  </div>
+  <div class="row mt-5 justify-content-center">
+    <div class="col-md-8">
+      <canvas id="precipitationLineChart"></canvas>
+    </div>
+  </div>
+  <div class="row mt-5 justify-content-center">
+    <div class="col-md-8">
+      <canvas id="humidityLineChart"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{{ chart_labels|json_script:"labels" }}
+{{ chart_data|json_script:"data" }}
+{{ temperature_data|json_script:"temperature_data" }}
+{{ precipitation_data|json_script:"precipitation_data" }}
+{{ humidity_data|json_script:"humidity_data" }}
+
+<script>
+  function updateFilterInput() {
+    const filterType = document.getElementById('filterType').value;
+    const filterInputContainer = document.getElementById('filterInputContainer');
+
+    filterInputContainer.innerHTML = '';
+
+    if (filterType === 'location') {
+        var select = document.createElement('select');
+        select.className = 'form-select';
+        select.id = 'filterInput';
+        select.name = 'filter_value';
+        
+        var defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Select location';
+        select.appendChild(defaultOption);
+
+        {% for location in locations %}
+        var optionLoc = document.createElement('option');
+        optionLoc.value = '{{ location.location }}';
+        optionLoc.textContent = '{{ location.location }}';
+        {% if request.GET.filter_type == 'location' and request.GET.filter_value == location.location %}
+        optionLoc.selected = true;
+        {% endif %}
+        select.appendChild(optionLoc);
+        {% endfor %}
+        
+        filterInputContainer.appendChild(select);
+    } else {
+        var selectBin = document.createElement('select');
+        selectBin.className = 'form-select';
+        selectBin.id = 'filterInput';
+        selectBin.name = 'filter_value';
+        
+        var defaultOptionBin = document.createElement('option');
+        defaultOptionBin.value = '';
+        defaultOptionBin.textContent = 'Select bin';
+        selectBin.appendChild(defaultOptionBin);
+
+        {% for bin in bins %}
+        var optionBin = document.createElement('option');
+        optionBin.value = '{{ bin.bin_id }}';
+        optionBin.textContent = '{{ bin.bin_id }}';
+        {% if request.GET.filter_type == 'bin_id' and request.GET.filter_value == bin.bin_id|stringformat:"s" %}
+        optionBin.selected = true;
+        {% endif %}
+        selectBin.appendChild(optionBin);
+        {% endfor %}
+        
+        filterInputContainer.appendChild(selectBin);
+    }
+  }
+
+  updateFilterInput();
+  document.getElementById('filterType').addEventListener('change', updateFilterInput);
+
+  const lineCtx = document.getElementById('wasteLineChart');
+  const temperatureCtx = document.getElementById('temperatureLineChart');
+  const precipitationCtx = document.getElementById('precipitationLineChart');
+  const humidityCtx = document.getElementById('humidityLineChart');
+
+  var labels = JSON.parse(document.getElementById('labels').textContent);
+  var data = JSON.parse(document.getElementById('data').textContent);
+  var temperatureData = JSON.parse(document.getElementById('temperature_data').textContent);
+  var precipitationData = JSON.parse(document.getElementById('precipitation_data').textContent);
+  var humidityData = JSON.parse(document.getElementById('humidity_data').textContent);
+
+  new Chart(lineCtx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Waste Level',
+        data: data,
+        fill: false,
+        borderColor: 'rgba(255, 99, 132, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+        pointRadius: 4,
+        cubicInterpolationMode: 'monotone'
+      }]
+    },
+    options: {
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Time'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Waste Added Level (cm)'
+          },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  new Chart(temperatureCtx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Temperature (deg C)',
+        data: temperatureData,
+        fill: false,
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+        pointRadius: 4,
+        cubicInterpolationMode: 'monotone'
+      }]
+    },
+    options: {
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Time'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Temperature (deg C)'
+          },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  new Chart(precipitationCtx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Precipitation',
+        data: precipitationData,
+        fill: false,
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+        pointRadius: 4,
+        cubicInterpolationMode: 'monotone'
+      }]
+    },
+    options: {
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Time'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Precipitation (mm)'
+          },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  new Chart(humidityCtx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Humidity',
+        data: humidityData,
+        fill: false,
+        borderColor: 'rgba(153, 102, 255, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(153, 102, 255, 1)',
+        pointRadius: 4,
+        cubicInterpolationMode: 'monotone'
+      }]
+    },
+    options: {
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Time'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Humidity (%)'
+          },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}
+
