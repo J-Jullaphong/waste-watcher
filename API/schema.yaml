@@ -1,0 +1,879 @@
+openapi: 3.0.2
+info:
+  title: Waste Watcher API
+  version: 1.0.0
+paths:
+  /api/bins/:
+    get:
+      operationId: listBins
+      summary: List all bins
+      description: |
+        Retrieve a list of all bins available in the system.
+
+        This endpoint returns a list of all bins available in the system.
+      responses:
+        '200':
+          description: List of bins
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bin'
+      tags:
+      - Bins
+  /api/bins/{bin_id}/:
+    get:
+      operationId: retrieveBin
+      summary: Retrieve bin details
+      description: |
+        Retrieve details of a specific bin by its ID.
+
+        This endpoint allows retrieving details of a specific bin by its ID.
+      parameters:
+      - name: bin_id
+        in: path
+        required: true
+        description: A unique value identifying this bin.
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Bin details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bin'
+      tags:
+      - Bins
+  /api/waste/latest/:
+    get:
+      operationId: listLatestWastes
+      summary: List latest waste data
+      description: |
+        Retrieve waste and weather data for all bins for the latest date.
+
+        This endpoint returns a list of dictionaries containing aggregated waste data and corresponding weather information for each bin for the latest date.
+      responses:
+        '200':
+          description: List of waste data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LatestListWaste'
+      tags:
+      - Waste
+  /api/waste/latest/bin/{bin}/:
+    get:
+      operationId: retrieveSpecificLatestWasteByBin
+      summary: Retrieve latest waste data for a specific bin
+      description: |
+        Retrieve waste and weather data for the specified bin for the latest date.
+
+        This endpoint returns response containing waste and weather data for the specified bin and latest date.
+      parameters:
+      - name: bin
+        in: path
+        required: true
+        description: ID of the bin.
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Waste data for the specified bin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LatestSpecificWasteByBin'
+      tags:
+      - Waste
+  /api/waste/latest/location/{location}/:
+    get:
+      operationId: retrieveSpecificLatestWasteByLocation
+      summary: Retrieve latest waste data for a specific location
+      description: |
+        Retrieve waste and weather data for the specified location for the latest date.
+
+        This endpoint returns response containing waste and weather data for the specified location and latest date.
+      parameters:
+      - name: location
+        in: path
+        required: true
+        description: Location identifier.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Waste data for the specified location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LatestSpecificWasteByLocation'
+      tags:
+      - Waste
+  /api/waste/{year}/{month}/{day}/:
+    get:
+      operationId: listPeriodWastes
+      summary: List waste data for a specific date
+      description: |
+        Retrieve waste and weather data for all bins for the specified date.
+
+        This endpoint returns a list of dictionaries containing aggregated waste data and corresponding weather information for each bin for the specified date.
+      parameters:
+      - name: year
+        in: path
+        required: true
+        description: Year.
+        schema:
+          type: string
+      - name: month
+        in: path
+        required: true
+        description: Month.
+        schema:
+          type: string
+      - name: day
+        in: path
+        required: true
+        description: Day.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: List of waste data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DailyListWaste'
+      tags:
+      - Waste
+  /api/waste/{year}/{month}/{day}/bin/{bin}/:
+    get:
+      operationId: retrieveSpecificPeriodWasteByBin
+      summary: Retrieve waste data for a specific bin and date
+      description: |
+        Retrieve waste and weather data for the specified bin and date.
+
+        This endpoint returns response containing waste and weather data for the specified bin and date.
+      parameters:
+      - name: year
+        in: path
+        required: true
+        description: Year.
+        schema:
+          type: string
+      - name: month
+        in: path
+        required: true
+        description: Month.
+        schema:
+          type: string
+      - name: day
+        in: path
+        required: true
+        description: Day.
+        schema:
+          type: string
+      - name: bin
+        in: path
+        required: true
+        description: ID of the bin.
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Waste data for the specified bin and date
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailySpecificWasteByBin'
+      tags:
+      - Waste
+  /api/waste/{year}/{month}/{day}/location/{location}/:
+    get:
+      operationId: retrieveSpecificPeriodWasteByLocation
+      summary: Retrieve waste data for a specific location and date
+      description: |
+        Retrieve waste and weather data for the specified location and date.
+
+        This endpoint returns response containing waste and weather data for the specified location and date.
+      parameters:
+      - name: year
+        in: path
+        required: true
+        description: Year.
+        schema:
+          type: string
+      - name: month
+        in: path
+        required: true
+        description: Month.
+        schema:
+          type: string
+      - name: day
+        in: path
+        required: true
+        description: Day.
+        schema:
+          type: string
+      - name: location
+        in: path
+        required: true
+        description: Location identifier.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Waste data for the specified location and date
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailySpecificWasteByLocation'
+      tags:
+      - Waste
+  /api/waste/{year}/{month}/:
+    get:
+      operationId: listMonthlyWastes
+      summary: List waste data for a specific month
+      description: |
+        Retrieve waste and weather data for all bins for the specified month.
+
+        This endpoint returns a list of dictionaries containing aggregated waste data and corresponding weather information for each bin for the specified month.
+      parameters:
+      - name: year
+        in: path
+        required: true
+        description: Year.
+        schema:
+          type: string
+      - name: month
+        in: path
+        required: true
+        description: Month.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: List of waste data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MonthlyListWaste'
+      tags:
+      - Waste
+  /api/waste/{year}/{month}/bin/{bin}/:
+    get:
+      operationId: retrieveSpecificMonthlyWasteByBin
+      summary: Retrieve waste data for a specific bin and month
+      description: |
+        Retrieve waste and weather data for the specified bin and month.
+
+        This endpoint returns response containing waste and weather data for the specified bin and month.
+      parameters:
+      - name: year
+        in: path
+        required: true
+        description: Year.
+        schema:
+          type: string
+      - name: month
+        in: path
+        required: true
+        description: Month.
+        schema:
+          type: string
+      - name: bin
+        in: path
+        required: true
+        description: ID of the bin.
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Waste data for the specified bin and month
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonthlySpecificWasteByBin'
+      tags:
+      - Waste
+  /api/waste/{year}/{month}/location/{location}/:
+    get:
+      operationId: retrieveSpecificMonthlyWasteByLocation
+      summary: Retrieve waste data for a specific location and month
+      description: |
+        Retrieve waste and weather data for the specified location and month.
+
+        This endpoint returns response containing waste and weather data for the specified location and month.
+      parameters:
+      - name: year
+        in: path
+        required: true
+        description: Year.
+        schema:
+          type: string
+      - name: month
+        in: path
+        required: true
+        description: Month.
+        schema:
+          type: string
+      - name: location
+        in: path
+        required: true
+        description: Location identifier.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Waste data for the specified location and month
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonthlySpecificWasteByLocation'
+      tags:
+      - Waste
+  /api/waste/{year}/:
+    get:
+      operationId: listYearlyWastes
+      summary: List waste data for a specific year
+      description: |
+        Retrieve waste and weather data for all bins for the specified year.
+
+        This endpoint returns a list of dictionaries containing aggregated waste data and corresponding weather information for each bin for the specified year.
+      parameters:
+      - name: year
+        in: path
+        required: true
+        description: Year.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: List of waste data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/YearlyListWaste'
+      tags:
+      - Waste
+  /api/waste/{year}/bin/{bin}/:
+    get:
+      operationId: retrieveSpecificYearlyWasteByBin
+      summary: Retrieve waste data for a specific bin and year
+      description: |
+        Retrieve waste and weather data for the specified bin and year.
+
+        This endpoint returns response containing waste and weather data for the specified bin and year.
+      parameters:
+      - name: year
+        in: path
+        required: true
+        description: Year.
+        schema:
+          type: string
+      - name: bin
+        in: path
+        required: true
+        description: ID of the bin.
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Waste data for the specified bin and year
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YearlySpecificWasteByBin'
+      tags:
+      - Waste
+  /api/waste/{year}/location/{location}/:
+    get:
+      operationId: retrieveSpecificYearlyWasteByLocation
+      summary: Retrieve waste data for a specific location and year
+      description: |
+        Retrieve waste and weather data for the specified location and year.
+
+        This endpoint returns response containing waste and weather data for the specified location and year.
+      parameters:
+      - name: year
+        in: path
+        required: true
+        description: Year.
+        schema:
+          type: string
+      - name: location
+        in: path
+        required: true
+        description: Location identifier.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Waste data for the specified location and year
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YearlySpecificWasteByLocation'
+      tags:
+      - Waste
+
+components:
+  schemas:
+    Bin:
+      type: object
+      properties:
+        bin_id:
+          type: integer
+          description: Unique ID of the bin.
+        name:
+          type: string
+          description: Name of the bin.
+        location:
+          type: string
+          description: Location of the bin.
+        lat:
+          type: string
+          format: decimal
+          description: Latitude coordinate of the bin location.
+        lon:
+          type: string
+          format: decimal
+          description: Longitude coordinate of the bin location.
+        waste_type:
+          type: string
+          description: Type of waste collected by the bin.
+        capacity:
+          type: string
+          format: decimal
+          description: Capacity of the bin.
+        collect_freq:
+          type: string
+          description: Collection frequency of the bin.
+    LatestListWaste:
+      type: object
+      properties:
+        bin:
+          type: integer
+          description: ID of the bin.
+        total_waste:
+          type: number
+          description: Total waste collected by the bin.
+        min_temp:
+          type: number
+          description: Minimum temperature recorded.
+        max_temp:
+          type: number
+          description: Maximum temperature recorded.
+        avg_temp:
+          type: number
+          description: Average temperature recorded.
+        min_precip:
+          type: number
+          description: Minimum precipitation recorded.
+        max_precip:
+          type: number
+          description: Maximum precipitation recorded.
+        sum_precip:
+          type: number
+          description: Total precipitation recorded.
+        min_humid:
+          type: number
+          description: Minimum humidity recorded.
+        max_humid:
+          type: number
+          description: Maximum humidity recorded.
+        avg_humid:
+          type: number
+          description: Average humidity recorded.
+    LatestSpecificWasteByBin:
+      type: object
+      properties:
+        bin:
+          type: integer
+          description: ID of the bin.
+        date:
+          type: string
+          description: Date of the waste record.
+        records:
+          type: array
+          items:
+            type: object
+            properties:
+              datetime:
+                type: string
+                description: Date and time of the waste record.
+              bin:
+                type: integer
+                description: ID of the bin.
+              level:
+                type: string
+                description: Waste level.
+              temp:
+                type: number
+                description: Temperature.
+              precip:
+                type: number
+                description: Precipitation.
+              humid:
+                type: number
+                description: Humidity.
+    LatestSpecificWasteByLocation:
+      type: object
+      properties:
+        location:
+          type: string
+          description: Location identifier.
+        date:
+          type: string
+          description: Date of the waste record.
+        records:
+          type: array
+          items:
+            type: object
+            properties:
+              datetime:
+                type: string
+                description: Date and time of the waste record.
+              bin:
+                type: integer
+                description: ID of the bin.
+              level:
+                type: string
+                description: Waste level.
+              temp:
+                type: number
+                description: Temperature.
+              precip:
+                type: number
+                description: Precipitation.
+              humid:
+                type: number
+                description: Humidity.
+    DailyListWaste:
+      type: object
+      properties:
+        bin:
+          type: integer
+          description: ID of the bin.
+        total_waste:
+          type: number
+          description: Total waste collected by the bin.
+        min_temp:
+          type: number
+          description: Minimum temperature recorded.
+        max_temp:
+          type: number
+          description: Maximum temperature recorded.
+        avg_temp:
+          type: number
+          description: Average temperature recorded.
+        min_precip:
+          type: number
+          description: Minimum precipitation recorded.
+        max_precip:
+          type: number
+          description: Maximum precipitation recorded.
+        sum_precip:
+          type: number
+          description: Total precipitation recorded.
+        min_humid:
+          type: number
+          description: Minimum humidity recorded.
+        max_humid:
+          type: number
+          description: Maximum humidity recorded.
+        avg_humid:
+          type: number
+          description: Average humidity recorded.
+    DailySpecificWasteByBin:
+      type: object
+      properties:
+        bin:
+          type: integer
+          description: ID of the bin.
+        year:
+          type: integer
+          description: Year of the waste record.
+        month:
+          type: integer
+          description: Month of the waste record.
+        day:
+          type: integer
+          description: Day of the waste record.
+        records:
+          type: array
+          items:
+            type: object
+            properties:
+              datetime:
+                type: string
+                description: Date and time of the waste record.
+              bin:
+                type: integer
+                description: ID of the bin.
+              level:
+                type: string
+                description: Waste level.
+              temp:
+                type: number
+                description: Temperature.
+              precip:
+                type: number
+                description: Precipitation.
+              humid:
+                type: number
+                description: Humidity.
+    DailySpecificWasteByLocation:
+      type: object
+      properties:
+        location:
+          type: string
+          description: Location identifier.
+        year:
+          type: integer
+          description: Year of the waste record.
+        month:
+          type: integer
+          description: Month of the waste record.
+        day:
+          type: integer
+          description: Day of the waste record.
+        records:
+          type: array
+          items:
+            type: object
+            properties:
+              datetime:
+                type: string
+                description: Date and time of the waste record.
+              bin:
+                type: integer
+                description: ID of the bin.
+              level:
+                type: string
+                description: Waste level.
+              temp:
+                type: number
+                description: Temperature.
+              precip:
+                type: number
+                description: Precipitation.
+              humid:
+                type: number
+                description: Humidity.
+    MonthlyListWaste:
+      type: object
+      properties:
+        bin:
+          type: integer
+          description: ID of the bin.
+        total_waste:
+          type: number
+          description: Total waste collected by the bin.
+        min_temp:
+          type: number
+          description: Minimum temperature recorded.
+        max_temp:
+          type: number
+          description: Maximum temperature recorded.
+        avg_temp:
+          type: number
+          description: Average temperature recorded.
+        min_precip:
+          type: number
+          description: Minimum precipitation recorded.
+        max_precip:
+          type: number
+          description: Maximum precipitation recorded.
+        sum_precip:
+          type: number
+          description: Total precipitation recorded.
+        min_humid:
+          type: number
+          description: Minimum humidity recorded.
+        max_humid:
+          type: number
+          description: Maximum humidity recorded.
+        avg_humid:
+          type: number
+          description: Average humidity recorded.
+    MonthlySpecificWasteByBin:
+      type: object
+      properties:
+        bin:
+          type: integer
+          description: ID of the bin.
+        year:
+          type: integer
+          description: Year of the waste record.
+        month:
+          type: integer
+          description: Month of the waste record.
+        records:
+          type: array
+          items:
+            type: object
+            properties:
+              datetime:
+                type: string
+                description: Date and time of the waste record.
+              bin:
+                type: integer
+                description: ID of the bin.
+              level:
+                type: string
+                description: Waste level.
+              temp:
+                type: number
+                description: Temperature.
+              precip:
+                type: number
+                description: Precipitation.
+              humid:
+                type: number
+                description: Humidity.
+    MonthlySpecificWasteByLocation:
+      type: object
+      properties:
+        location:
+          type: string
+          description: Location identifier.
+        year:
+          type: integer
+          description: Year of the waste record.
+        month:
+          type: integer
+          description: Month of the waste record.
+        records:
+          type: array
+          items:
+            type: object
+            properties:
+              datetime:
+                type: string
+                description: Date and time of the waste record.
+              bin:
+                type: integer
+                description: ID of the bin.
+              level:
+                type: string
+                description: Waste level.
+              temp:
+                type: number
+                description: Temperature.
+              precip:
+                type: number
+                description: Precipitation.
+              humid:
+                type: number
+                description: Humidity.
+    YearlyListWaste:
+      type: object
+      properties:
+        bin:
+          type: integer
+          description: ID of the bin.
+        total_waste:
+          type: number
+          description: Total waste collected by the bin.
+        min_temp:
+          type: number
+          description: Minimum temperature recorded.
+        max_temp:
+          type: number
+          description: Maximum temperature recorded.
+        avg_temp:
+          type: number
+          description: Average temperature recorded.
+        min_precip:
+          type: number
+          description: Minimum precipitation recorded.
+        max_precip:
+          type: number
+          description: Maximum precipitation recorded.
+        sum_precip:
+          type: number
+          description: Total precipitation recorded.
+        min_humid:
+          type: number
+          description: Minimum humidity recorded.
+        max_humid:
+          type: number
+          description: Maximum humidity recorded.
+        avg_humid:
+          type: number
+          description: Average humidity recorded.
+    YearlySpecificWasteByBin:
+      type: object
+      properties:
+        bin:
+          type: integer
+          description: ID of the bin.
+        year:
+          type: integer
+          description: Year of the waste record.
+        records:
+          type: array
+          items:
+            type: object
+            properties:
+              datetime:
+                type: string
+                description: Date and time of the waste record.
+              bin:
+                type: integer
+                description: ID of the bin.
+              level:
+                type: string
+                description: Waste level.
+              temp:
+                type: number
+                description: Temperature.
+              precip:
+                type: number
+                description: Precipitation.
+              humid:
+                type: number
+                description: Humidity.
+    YearlySpecificWasteByLocation:
+      type: object
+      properties:
+        location:
+          type: string
+          description: Location identifier.
+        year:
+          type: integer
+          description: Year of the waste record.
+        records:
+          type: array
+          items:
+            type: object
+            properties:
+              datetime:
+                type: string
+                description: Date and time of the waste record.
+              bin:
+                type: integer
+                description: ID of the bin.
+              level:
+                type: string
+                description: Waste level.
+              temp:
+                type: number
+                description: Temperature.
+              precip:
+                type: number
+                description: Precipitation.
+              humid:
+                type: number
+                description: Humidity.
+
