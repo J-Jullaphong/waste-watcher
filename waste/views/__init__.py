@@ -1,0 +1,3 @@
+from .latest_waste_view import LatestWasteView
+from .waste_level_comparison_view import WasteLevelComparisonView
+from .unavailable_view import UnavailableView
