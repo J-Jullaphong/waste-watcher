@@ -88,7 +88,7 @@ class WasteLevelComparisonView(TemplateView):
         return context
 
     def get_daily_data(self, waste_queryset: QuerySet,
-                       weather_queryset: QuerySet):
+                       weather_queryset: QuerySet) -> list[list]:
         """
         Get daily waste and weather data.
 
@@ -138,10 +138,10 @@ class WasteLevelComparisonView(TemplateView):
                 "humidity_avg": weather_condition['avg_humid']
             })
             time += 4
-        return chart_data, chart_labels, temperature_data, precipitation_data, humidity_data, weather_data
+        return [chart_data, chart_labels, temperature_data, precipitation_data, humidity_data, weather_data]
 
     def get_monthly_data(self, waste_queryset: QuerySet,
-                         weather_queryset: QuerySet, month: int, year: int):
+                         weather_queryset: QuerySet, month: int, year: int) -> list[list]:
         """
         Get monthly waste and weather data.
 
@@ -192,10 +192,10 @@ class WasteLevelComparisonView(TemplateView):
                 "humidity_avg": weather_condition['avg_humid']
             })
             start_date += 1
-        return chart_data, chart_labels, temperature_data, precipitation_data, humidity_data, weather_data
+        return [chart_data, chart_labels, temperature_data, precipitation_data, humidity_data, weather_data]
 
     def get_yearly_data(self, waste_queryset: QuerySet,
-                        weather_queryset: QuerySet):
+                        weather_queryset: QuerySet) -> list[list]:
         """
         Get yearly waste and weather data.
 
@@ -242,4 +242,4 @@ class WasteLevelComparisonView(TemplateView):
                 "humidity_avg": weather_condition['avg_humid']
             })
             month += 1
-        return chart_data, chart_labels, temperature_data, precipitation_data, humidity_data, weather_data
+        return [chart_data, chart_labels, temperature_data, precipitation_data, humidity_data, weather_data]
