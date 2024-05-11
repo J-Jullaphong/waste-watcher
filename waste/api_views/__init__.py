@@ -1,0 +1,8 @@
+from .list_bins_api import ListBinsAPI
+from .specific_bin_api import SpecificBinAPI
+
+from .list_latest_wastes_api import ListLatestWastesAPI
+from .specific_latest_waste_api import SpecificLatestWasteAPI
+
+from .list_period_wastes_api import ListPeriodWastesAPI
+from .specific_period_waste_api import SpecificPeriodWasteAPI
