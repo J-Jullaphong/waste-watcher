@@ -1,0 +1,169 @@
+[
+    {
+        "id": "05794e4f141f255b",
+        "type": "tab",
+        "label": "Phimnada's waste",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "8b0b5fe7673cb929",
+        "type": "debug",
+        "z": "05794e4f141f255b",
+        "name": "debug waste",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1110,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "e6078ca44b5fb44e",
+        "type": "mqtt in",
+        "z": "05794e4f141f255b",
+        "name": "",
+        "topic": "b6510545641/waste",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "555879e4a9cd75df",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 110,
+        "y": 40,
+        "wires": [
+            [
+                "9060c8b2713378e5"
+            ]
+        ]
+    },
+    {
+        "id": "9060c8b2713378e5",
+        "type": "change",
+        "z": "05794e4f141f255b",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload.timestamp",
+                "pt": "msg",
+                "to": "",
+                "tot": "date"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 360,
+        "y": 40,
+        "wires": [
+            [
+                "62e7d46138cf65a9"
+            ]
+        ]
+    },
+    {
+        "id": "a0be031053425a59",
+        "type": "template",
+        "z": "05794e4f141f255b",
+        "name": "waste template",
+        "field": "topic",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "INSERT INTO waste (bin_id, timestamp, level)\nVALUES (\n    {{payload.bin_id}},\n    '{{payload.timestamp}}',\n    {{payload.level}}\n)",
+        "output": "str",
+        "x": 780,
+        "y": 40,
+        "wires": [
+            [
+                "36736a95987068bd"
+            ]
+        ]
+    },
+    {
+        "id": "62e7d46138cf65a9",
+        "type": "function",
+        "z": "05794e4f141f255b",
+        "name": "convert_time",
+        "func": "var timestamp = new Date(msg.payload.timestamp);\ntimestamp.setUTCHours(timestamp.getUTCHours() + 7);\nvar newTimestamp = timestamp.toISOString().slice(0, 13).replace(\"T\", \" \") + \":00:00\";\nmsg.payload.timestamp = newTimestamp;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 590,
+        "y": 40,
+        "wires": [
+            [
+                "a0be031053425a59"
+            ]
+        ]
+    },
+    {
+        "id": "36736a95987068bd",
+        "type": "mysql",
+        "z": "05794e4f141f255b",
+        "mydb": "f1768b87334a495a",
+        "name": "iot",
+        "x": 950,
+        "y": 40,
+        "wires": [
+            [
+                "8b0b5fe7673cb929"
+            ]
+        ]
+    },
+    {
+        "id": "555879e4a9cd75df",
+        "type": "mqtt-broker",
+        "name": "IOT",
+        "broker": "iot.cpe.ku.ac.th",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "f1768b87334a495a",
+        "type": "MySQLdatabase",
+        "name": "",
+        "host": "iot.cpe.ku.ac.th",
+        "port": "3306",
+        "db": "b6510545314",
+        "tz": "",
+        "charset": "UTF8"
+    }
+]

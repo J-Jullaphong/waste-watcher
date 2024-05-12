@@ -1,0 +1,159 @@
+[
+    {
+        "id": "115352146ed74261",
+        "type": "tab",
+        "label": "Jullaphong's weatherAPI",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "f5db4f9cf4b10aa3",
+        "type": "debug",
+        "z": "115352146ed74261",
+        "name": "debug file",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1180,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "8267652e4a762bc2",
+        "type": "json",
+        "z": "115352146ed74261",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 470,
+        "y": 40,
+        "wires": [
+            [
+                "3089cc76ac54c249"
+            ]
+        ]
+    },
+    {
+        "id": "31676956099b9e16",
+        "type": "http request",
+        "z": "115352146ed74261",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "https://api.weatherapi.com/v1/current.json?key=abe3ca9009204a9c9ef155339242703&q=Thanyaburi&aqi=no",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 310,
+        "y": 40,
+        "wires": [
+            [
+                "8267652e4a762bc2"
+            ]
+        ]
+    },
+    {
+        "id": "d3bf05446c14668a",
+        "type": "inject",
+        "z": "115352146ed74261",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "3600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 40,
+        "wires": [
+            [
+                "31676956099b9e16"
+            ]
+        ]
+    },
+    {
+        "id": "92b99abd4950a9d8",
+        "type": "mysql",
+        "z": "115352146ed74261",
+        "mydb": "f1768b87334a495a",
+        "name": "iot",
+        "x": 1030,
+        "y": 40,
+        "wires": [
+            [
+                "f5db4f9cf4b10aa3"
+            ]
+        ]
+    },
+    {
+        "id": "89474631e7d7c416",
+        "type": "template",
+        "z": "115352146ed74261",
+        "name": "weather_api template",
+        "field": "topic",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "INSERT INTO weather_api (timestamp, location, lat, lon, temp, precip, humid)\nVALUES (\n    '{{payload.current.last_updated}}',\n    '{{payload.location.name}}',\n    {{payload.location.lat}},\n    {{payload.location.lon}},\n    {{payload.current.temp_c}},\n    {{payload.current.precip_mm}},\n    {{payload.current.humidity}}\n)",
+        "output": "str",
+        "x": 840,
+        "y": 40,
+        "wires": [
+            [
+                "92b99abd4950a9d8"
+            ]
+        ]
+    },
+    {
+        "id": "3089cc76ac54c249",
+        "type": "function",
+        "z": "115352146ed74261",
+        "name": "convert_time",
+        "func": "var timestamp = msg.payload.current.last_updated;\nvar parts = timestamp.split(\" \");\nvar datePart = parts[0];\nvar hourPart = parts[1].split(\":\")[0];\nvar newTimestamp = datePart + \" \" + hourPart + \":00:00\";\nmsg.payload.current.last_updated = newTimestamp;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 630,
+        "y": 40,
+        "wires": [
+            [
+                "89474631e7d7c416"
+            ]
+        ]
+    },
+    {
+        "id": "f1768b87334a495a",
+        "type": "MySQLdatabase",
+        "name": "",
+        "host": "iot.cpe.ku.ac.th",
+        "port": "3306",
+        "db": "b6510545314",
+        "tz": "",
+        "charset": "UTF8"
+    }
+]
