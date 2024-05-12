@@ -31,7 +31,6 @@ git clone https://github.com/J-Jullaphong/waste-watcher.git
 cd waste-watcher
 ```
 3. Import `data/data.sql` file to your SQL database hosting platform e.g. phpMyAdmin.
-   >> Make sure to change the database name within this file before importing.
 4. Create a virtual environment.
    ```
    python -m venv venv
