@@ -6,7 +6,8 @@
 - Phimnada Chirachotsuphaphat 6510545641
 
 ## Project Overview
-This project aims to identify the relationship and impact of weather onto the waste production. We will use an ultrasonic sensor (HC-SR04) to measure the waste level in a bin, and integrate the gathered data with the weather data from the weather API. With these two sources of data, we will be able to see how the weather can affect the waste production, which can later be developed into solutions for the global waste problem.
+- WasteWatcher is an API platform and data visualization web application.
+- WasteWatcher serves as a platform for waste management analysis to help address the global warming issue.
 
 ## Features
 1. **Real-time Waste Monitoring**: Retrieve bins and waste records along with weather conditions via API in real-time.
